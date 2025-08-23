@@ -6,7 +6,7 @@ A training codebase for **Audio Deepfake Detection**. It supports the following 
 * **Front End** – Huggingface audio foundation models used to extract deep-learning features.
 * **Back End** – Models that operate on extracted features.
 
-Compared with the earlier Tomato library, OneBit adds stricter **type checking**, replaces dictionaries objects with `dataclasses` for module I/O, adopts a **factory pattern** that automatically discovers/instantiates new classes, and uses flexible **callbacks** to control checkpointing, logging, and more. These choices make the codebase both easier to extend and less error-prone.
+Compared with the earlier [Tomato](https://github.com/XIAOYixuan/tomatoDD) library, OneBit adds stricter **type checking**, replaces dictionaries objects with `dataclasses` for module I/O, adopts a **factory pattern** that automatically discovers/instantiates new classes, and uses flexible **callbacks** to control checkpointing, logging, and more. These choices make the codebase both easier to extend and less error-prone.
 
 > Note: parts of this codebase (`ConfigManager` for reading/writing config files and unit tests) were initially generated with claude-4-sonnet(cursor) and then refined by the developer.
 
