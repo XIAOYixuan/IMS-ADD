@@ -26,6 +26,7 @@ class Task:
         # and the callbacks will be executed in the same order they appear in the cfg
         if self.callback_cfgs is not None:
             for cb_name in self.callback_cfgs.keys():
+                if self.callback_cfgs[cb_name] is None: continue
                 callback = CallbackFactory.create(cb_name, self.config_manager)
                 callbacks.append(callback)
                 created_callback_names.add(cb_name)

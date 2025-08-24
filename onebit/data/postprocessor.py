@@ -36,8 +36,8 @@ class PostProcessor:
         if alen == self.max_samples:
             return audio
         elif alen < self.max_samples:
-            num_repeats = int(self.max_samples / alen) + 1
-            audio = audio.repeat(0, num_repeats)
+            num_repeats = -(-self.max_samples//alen) 
+            audio = np.tile(audio, num_repeats) 
         audio = self._random_st_for_long_audio(audio)
         return audio
 

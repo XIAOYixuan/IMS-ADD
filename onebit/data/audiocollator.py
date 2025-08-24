@@ -46,6 +46,7 @@ class AudioCollator:
         self.sample_rate = config_manager.get_sample_rate()
         
         self.fe = AutoFeatureExtractor.from_pretrained(extractor_name)
+        self.fe.do_normalize = False
         self.fe.return_attention_mask = True
 
     def __call__(self, batch: List[AudioSampleWithTensors]) -> AudioBatch:
@@ -57,7 +58,7 @@ class AudioCollator:
             audio_arrays,
             sampling_rate=self.sample_rate,
             padding=True,                
-            return_tensors="pt"
+            return_tensors="pt",
         )
 
         return AudioBatch(

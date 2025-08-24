@@ -128,9 +128,6 @@ class AudioDataset(Dataset):
             logger.info(f"Audio too short {duration} Path: {audio_path}")
             return None
 
-        if duration > self.max_samples:
-            audio = audio[:self.max_samples]
-
         return audio
 
     def __len__(self) -> int:
@@ -165,6 +162,9 @@ class AudioDataset(Dataset):
         if self.post_processor is not None:
             audio = self.post_processor(audio)
         
+        if self.split != 'train':
+            return audio
+
         if self.augmenter is not None:
             audio = self.augmenter(audio)
 
