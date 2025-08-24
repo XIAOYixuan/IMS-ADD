@@ -59,7 +59,10 @@ class AudioDataset(Dataset):
         self.dataset_dir = Path(base_path)
 
         self.sample_rate = 16_000
-        self.max_samples = int(self.data_conf.dataset.max_length * self.sample_rate)
+        if hasattr(self.data_conf, 'max_samples'):
+            self.max_samples = int(self.data_conf.dataset.max_samples)
+        else:
+            self.max_samples = int(self.data_conf.dataset.max_length * self.sample_rate)
 
         self.post_processor = None
         self.augmenter = None
