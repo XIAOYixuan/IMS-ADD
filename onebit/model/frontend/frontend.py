@@ -24,7 +24,8 @@ class FrontendModel(nn.Module):
         self.model = AutoModel.from_pretrained(frontend_config.name)
         self.frontend_cfg = frontend_config 
         logger.info(f'front end config \n {frontend_config}')
-        if getattr(self.frontend_cfg, 'freeze_frontend', True):
+        self.freeze_frontend = getattr(self.frontend_cfg, 'freeze_frontend', True)
+        if self.freeze_frontend:
             for param in self.model.parameters():
                 param.requires_grad = False
 
@@ -33,12 +34,20 @@ class FrontendModel(nn.Module):
 
     def forward(self, batch: AudioBatch) -> FrontendOutput:
         self.hook_manager.clear_batch_activations()
-        
-        out = self.model(
-            input_values=batch.input_values,
-            attention_mask=batch.attention_mask,
-            output_hidden_states=self.frontend_cfg.output_hidden_states
-        )
+
+        if self.freeze_frontend:
+            with torch.no_grad():
+                out = self.model(
+                    input_values=batch.input_values,
+                    attention_mask=batch.attention_mask,
+                    output_hidden_states=self.frontend_cfg.output_hidden_states
+                )
+        else:
+            out = self.model(
+                input_values=batch.input_values,
+                attention_mask=batch.attention_mask,
+                output_hidden_states=self.frontend_cfg.output_hidden_states
+            )
 
         last_hidden_state: torch.Tensor = out.last_hidden_state
         T = last_hidden_state.size(1)

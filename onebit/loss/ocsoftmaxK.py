@@ -29,7 +29,9 @@ class OCSoftmaxK(BaseLoss):
         self.m_real = getattr(loss_config, 'm_real', 0.9)
         self.m_fake = getattr(loss_config, 'm_fake', 0.2)
         self.alpha = getattr(loss_config, 'alpha', 20.0)
-        self.real_weight = loss_config.get('real_weight', 1.0)
+        raw_real_weight = loss_config.get('real_weight', 1.0)
+        self.real_weight = raw_real_weight / (1.0 + raw_real_weight)
+        self.fake_weight = 1.0 - self.real_weight
         self.softplus = nn.Softplus()
         # fake weight default 1
 
@@ -50,7 +52,7 @@ class OCSoftmaxK(BaseLoss):
             real_loss = self.real_weight * self.softplus(self.alpha * (self.m_real - real_scores)).mean(dim=0)
             total_loss += real_loss.sum()
         if fake_scores.numel() > 0:
-            fake_loss = self.softplus(self.alpha * (fake_scores - self.m_fake)).mean(dim=0)
+            fake_loss = self.fake_weight * self.softplus(self.alpha * (fake_scores - self.m_fake)).mean(dim=0)
             total_loss += fake_loss.sum()
         
         return LossOutput(loss=total_loss)
