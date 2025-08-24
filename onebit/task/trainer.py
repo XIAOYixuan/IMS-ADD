@@ -68,7 +68,7 @@ class Trainer(Task):
 
         if opt_name.lower() == 'adam':
             beta1 = getattr(exp_config.optimizer, 'beta1', 0.9)
-            beta2 = getattr(exp_config.optimizer, 'beta', 0.999)
+            beta2 = getattr(exp_config.optimizer, 'beta2', 0.999)
             weight_decay = getattr(exp_config.optimizer, 'weight_decay', 1e-4)
             return torch.optim.Adam(self.model.parameters(), lr=lr, betas=(beta1, beta2), weight_decay=weight_decay)
         else:
