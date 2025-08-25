@@ -12,3 +12,4 @@ tokenizers==0.21.2
 torch==2.7.1
 tqdm==4.67.1
 transformers @ git+https://github.com/huggingface/transformers@cb39f7dd5ba874ee1859b47283b08cd3a6ab5a0d
+einops==0.8.1
