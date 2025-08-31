@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from einops import rearrange
 
 from onebit.config import ConfigManager
-from onebit.data.audiocollator import AudioBatch
+from onebit.data import AudioBatch
 from onebit.model import frontend
 from onebit.model.backend.base import BaseBackendModel
 from onebit.model.datatypes import FrontendOutput, BackendOutput

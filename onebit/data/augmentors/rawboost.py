@@ -5,8 +5,12 @@ from typing import Optional, Dict, Any
 from omegaconf import DictConfig 
 from .RawBoost.data_utils_rawboost import process_Rawboost_feature, get_default_args
 
+from onebit.data.augmentors.registry import AugmentorRegistry
+from onebit.data.augmentors.base import BaseAugmentor
+from onebit.config import ConfigManager
 
-class RawBoostAugmentation:
+@AugmentorRegistry.register('rawboost')
+class RawBoostAugmentation(BaseAugmentor):
     """
     RawBoost augmentation wrapper that provides a clean interface for audio data augmentation.
     
@@ -16,10 +20,16 @@ class RawBoostAugmentation:
     
     def __init__(
         self,
-        algorithm: int = 5,
-        probability: float = 0.5,
-        sample_rate: int = 16_000,
+        config_manager: ConfigManager
     ):
+        super().__init__(config_manager)
+        data_config = config_manager.get_data_config()
+        
+        # Read from the correct config path: data.aug.rawboost
+        rawboost_config = data_config.aug.rawboost
+        algorithm: int = getattr(rawboost_config, 'algorithm', 5)
+        probability = getattr(rawboost_config, 'probability', 0.5) 
+        sample_rate: int = getattr(rawboost_config, 'sample_rate', 16_000)
         """
         Initialize RawBoost augmentation.
         
@@ -88,23 +98,6 @@ class RawBoostAugmentation:
         
         # Convert back to tensor
         return torch.from_numpy(augmented_np).float()
-    
-    @classmethod
-    def from_config(cls, config: DictConfig) -> 'RawBoostAugmentation':
-        """
-        Create RawBoostAugmentation from OmegaConf configuration.
-        
-        Args:
-            config: OmegaConf configuration object with augmentation settings
-            
-        Returns:
-            RawBoostAugmentation instance
-        """
-        return cls(
-            algorithm=getattr(config, 'algorithm', 5),
-            probability=getattr(config, 'probability', 0.5),
-            sample_rate=getattr(config, 'sample_rate', 16000)
-        )
     
     def get_algorithm_description(self) -> str:
         """

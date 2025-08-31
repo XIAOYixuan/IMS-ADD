@@ -11,12 +11,14 @@ import numpy as np
 from functools import partial
 from transformers import AutoFeatureExtractor
 
-from onebit.data.audiodataset import AudioSampleWithTensors
+from onebit.data.datasets.audiodataset import AudioSampleWithTensors
+from onebit.data.collators.base import BaseAudioBatch, BaseCollator
+from onebit.data.collators.registry import CollatorRegistry
 from onebit.config import ConfigManager
 
 
 @dataclass
-class AudioBatch:
+class AudioBatch(BaseAudioBatch):
     input_values: torch.Tensor
     attention_mask: torch.Tensor
     label_tensors: torch.Tensor
@@ -26,18 +28,9 @@ class AudioBatch:
     attackers: List[str] 
     origin_ds: List[str] 
     audio_paths: List[str] 
-    
-    def to(self, device: torch.device, non_blocking: bool = True):
-        for fld, value in self.__dict__.items():
-            if isinstance(value, torch.Tensor):
-                setattr(self, fld, value.to(device, non_blocking=non_blocking))
-        return self
 
-    def asdict(self) -> Dict[str, Any]:
-        return self.__dict__
-
-
-class AudioCollator:
+@CollatorRegistry.register('audio')
+class AudioCollator(BaseCollator):
     
     def __init__(self, config_manager: ConfigManager):
         model_config = config_manager.get_model_config()

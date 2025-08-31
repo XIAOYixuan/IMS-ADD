@@ -9,7 +9,7 @@ import torch.nn as nn
 from transformers import AutoModel
 
 from onebit.config import ConfigManager
-from onebit.data.audiocollator import AudioBatch
+from onebit.data import AudioBatch
 from onebit.model.datatypes import FrontendOutput
 from onebit.util import get_logger
 from .hook_manager import HookManager 

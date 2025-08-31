@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 
 from onebit.config import ConfigManager
-from onebit.data.audiocollator import AudioBatch
+from onebit.data import AudioBatch
 from onebit.model.backend.base import BaseBackendModel
 from onebit.model.datatypes import FrontendOutput, BackendOutput
 from onebit.model.backend.registry import BackendRegistry

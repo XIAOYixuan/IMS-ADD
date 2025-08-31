@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 
 from onebit.config import ConfigManager
 from onebit.model.datatypes import FrontendOutput, BackendOutput
-from onebit.data.audiocollator import AudioBatch
+from onebit.data import AudioBatch
 
 class BaseBackendModel(nn.Module, ABC):
 

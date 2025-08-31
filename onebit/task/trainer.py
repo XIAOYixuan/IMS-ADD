@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from onebit.config import ConfigManager
-from onebit.data import AudioDataset, AudioCollator, AudioBatch
+from onebit.data import DatasetFactory, CollatorFactory, AudioBatch
 from onebit.model.datatypes import BackendOutput
 from onebit.task.callbacks.base import BaseCallback
 from onebit.loss.datatypes import LossOutput
@@ -142,9 +142,9 @@ class Trainer(Task):
     def start(self):
         train_key = 'train'
         dev_key = 'dev'
-        trainset = AudioDataset(train_key, self.config_manager)
-        devset = AudioDataset(dev_key, self.config_manager)
-        collator = AudioCollator(self.config_manager)
+        trainset = DatasetFactory.create(train_key, self.config_manager)
+        devset = DatasetFactory.create(dev_key, self.config_manager)
+        collator = CollatorFactory.create(self.config_manager)
         self.trainset = trainset
         self.devset = devset
         logger.info(f"Training set size: {len(trainset)} samples")

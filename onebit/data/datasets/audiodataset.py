@@ -13,8 +13,10 @@ import pandas as pd
 from dataclasses import dataclass
 
 from onebit.config import ConfigManager
-from onebit.data.augmentation import RawBoostAugmentation
-from onebit.data.postprocessor import PostProcessor
+from onebit.data.datasets.base import BaseDataset
+from onebit.data.datasets.registry import DatasetRegistry 
+from onebit.data.augmentors.augmentor import Augmentor
+from onebit.data.postprocessors.postprocessor import PostProcessor
 from onebit.data import audio_util
 from onebit.util import get_logger
 logger = get_logger(__name__) 
@@ -36,8 +38,8 @@ class AudioSampleWithTensors(AudioSample):
     audio_array: np.ndarray # used in AutoFeatureExtractor 
     label_tensor: torch.Tensor
 
-
-class AudioDataset(Dataset):
+@DatasetRegistry.register("audio")
+class AudioDataset(BaseDataset):
 
     def __init__(self,
                  split: str,
@@ -47,40 +49,36 @@ class AudioDataset(Dataset):
             split: Dataset split ('train', 'dev', 'test')
             config: the config for all
         """
-
-        if config_manager is None:
-            raise ValueError("Must provide the config")
-
-        self.split = split
-        self.config_manager = config_manager
+        # Initialize parent class with common functionality
+        super().__init__(split, config_manager)
         self.data_conf = self.config_manager.get_data_config()
-
+        
+        self.sample_rate = self.config_manager.get_sample_rate()
         base_path = self.config_manager.get_dataset_path()
         self.dataset_dir = Path(base_path)
 
-        self.sample_rate = 16_000
         if hasattr(self.data_conf, 'max_samples'):
             self.max_samples = int(self.data_conf.dataset.max_samples)
         else:
             self.max_samples = int(self.data_conf.dataset.max_length * self.sample_rate)
-
-        self.post_processor = None
-        self.augmenter = None
-        self._init_processors()
-
-        self.metadata = self._load_metadata()
+        
+        self.metadata: List[AudioSample] = self._load_metadata()
 
         if len(self.metadata) == 0:
             raise ValueError(f"No data found for split {split} in {self.dataset_dir}")
-
-    def _init_processors(self):
-        if self.config_manager.is_post_processing_enabled():
-            self.post_processor = PostProcessor.from_config(self.config_manager)
-
-        if self.config_manager.is_augmentation_enabled() and self.split == 'train':
-            self.augmenter = RawBoostAugmentation.from_config(self.config_manager.get_augmentation_config())
-
-    def _load_metadata(self):
+        
+        self.post_processor = PostProcessor.from_config(self.config_manager)
+        self.augmentor = Augmentor.from_config(self.config_manager)
+    
+    def _encode_label(self, label: str) -> int:
+        if label.lower() == 'bonafide':
+            return 1
+        elif label.lower() == 'spoof':
+            return 0
+        else:
+            raise ValueError(f'Invalid label: [{label}], must be [bonafide, spoof]')
+    
+    def _load_metadata(self) -> List[AudioSample]:
         """
         Load metadata from .tsv and .txt files.
         Returns:
@@ -132,6 +130,15 @@ class AudioDataset(Dataset):
             return None
 
         return audio
+    
+    def _process_audio(self, audio: np.ndarray) -> np.ndarray:
+        if self.post_processor is not None:
+            audio = self.post_processor(audio)
+        
+        if self.split == 'train' and self.augmentor is not None:
+            audio = self.augmentor(audio)
+
+        return audio
 
     def __len__(self) -> int:
         return len(self.metadata)
@@ -160,26 +167,6 @@ class AudioDataset(Dataset):
             audio_array=audio,
             label_tensor=label_tensor
         )
-
-    def _process_audio(self, audio: np.ndarray) -> np.ndarray:
-        if self.post_processor is not None:
-            audio = self.post_processor(audio)
-        
-        if self.split != 'train':
-            return audio
-
-        if self.augmenter is not None:
-            audio = self.augmenter(audio)
-
-        return audio
-
-    def _encode_label(self, label: str) -> int:
-        if label.lower() == 'bonafide':
-            return 1
-        elif label.lower() == 'spoof':
-            return 0
-        else:
-            raise ValueError(f'Invalid label: [{label}], must be [bonafide, spoof]')
 
     def validate_dataset(self, tsv_data: pd.DataFrame, txt_data: pd.DataFrame) -> bool:
         """
@@ -313,6 +300,10 @@ class AudioDataset(Dataset):
         print(f"{'-'*40}")
         print(f"Post-processing Enabled: {self.config_manager.is_post_processing_enabled()}")
         print(f"Augmentation Enabled: {self.config_manager.is_augmentation_enabled() and self.split == 'train'}")
+        if self.post_processor is not None:
+            print(f"PostProcessor: {len(self.post_processor.postprocessors)} postprocessors loaded")
+        if self.augmentor is not None:
+            print(f"Augmentor: {len(self.augmentor.augmentors)} augmentors loaded")
         print(f"Trim Silence: {self.data_conf.dataset.trim_sil}")
         
         # File path validation (quick check without loading audio)

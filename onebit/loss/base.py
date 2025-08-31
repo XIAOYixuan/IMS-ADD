@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 import torch.nn as nn
 
 from onebit.config import ConfigManager
-from onebit.data.audiocollator import AudioBatch
+from onebit.data import AudioBatch
 from onebit.model.datatypes import FrontendOutput, BackendOutput
 from onebit.loss.datatypes import LossOutput
 

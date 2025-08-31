@@ -214,14 +214,6 @@ class ConfigManager:
         else:
             raise ValueError(f"Unknown split: {split}")
 
-    def is_augmentation_enabled(self) -> bool:
-        augmentation_config = self.config.data.aug
-        return getattr(augmentation_config, 'enabled', False)
-
-    def is_post_processing_enabled(self) -> bool:
-        post_processing_config = self.config.data.post
-        return getattr(post_processing_config, 'enabled', True)
-
     def get_augmentation_config(self) -> DictConfig:
         return self.config.data.aug
 

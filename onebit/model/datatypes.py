@@ -14,8 +14,6 @@ from dataclasses import dataclass
 import torch
 from transformers.utils.generic import ModelOutput
 
-from onebit.data.audiocollator import AudioBatch
-
 @dataclass
 class FrontendOutput:
     foutput: ModelOutput

@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from onebit.loss.base import BaseLoss
 from onebit.loss.datatypes import LossOutput 
 from onebit.loss.registry import LossRegistry
-from onebit.data.audiocollator import AudioBatch
+from onebit.data import AudioBatch
 from onebit.model.datatypes import FrontendOutput, BackendOutput
 from onebit.model.backend.lw_bn import FrontendOutput, LWBNOutput 
 from onebit.util import get_logger

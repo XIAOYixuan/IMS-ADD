@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from onebit.config import ConfigManager
-from onebit.data import AudioDataset, AudioCollator, AudioBatch
+from onebit.data import DatasetFactory, CollatorFactory, AudioBatch
 from onebit.model.datatypes import FrontendOutput, BackendOutput
 from onebit.loss.datatypes import LossOutput
 from onebit.task.base import Task
@@ -49,8 +49,8 @@ class Evaluator(Task):
 
     def start(self):
         val_key = self.config_manager.get_data_config().val_key
-        val_set = AudioDataset(val_key, self.config_manager)
-        collator = AudioCollator(self.config_manager)
+        val_set = DatasetFactory.create(val_key, self.config_manager)
+        collator = CollatorFactory.create(self.config_manager)
 
         loader_config = self.config_manager.get_data_config().loader # type: ignore
         self.val_dataloader = DataLoader(
