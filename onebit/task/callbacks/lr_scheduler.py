@@ -47,19 +47,20 @@ class LRSchedulerCallback(BaseCallback):
         if self.scheduler_config is None:
             self.scheduler_type = 'step'
             self.cosine_T_max = 100  
-            self.cosine_eta_min = 1e-6
             self.step_size = 10
             self.step_gamma = 0.5
+            self.min_lr_threshold = 1e-6  
         else:
             self.scheduler_type = getattr(self.scheduler_config, 'type', 'cosine')
             # cosine param
             self.cosine_T_max = getattr(self.scheduler_config, 'T_max', 100)
-            self.cosine_eta_min = getattr(self.scheduler_config, 'eta_min', 1e-6)
             # step param
             self.step_size = getattr(self.scheduler_config, 'step_size', 30)
             self.step_gamma = getattr(self.scheduler_config, 'gamma', 0.1)
+            self.min_lr_threshold = getattr(self.scheduler_config, 'min_lr_threshold', 1e-6)
         
         self.scheduler: Optional[LRScheduler] = None
+        self.scheduling_stopped = False  
         
         logger.info(f"LR Scheduler initialized: type={self.scheduler_type}")
 
@@ -68,9 +69,9 @@ class LRSchedulerCallback(BaseCallback):
             self.scheduler = CosineAnnealingLR(
                 task.optimizer, 
                 T_max=self.cosine_T_max,
-                eta_min=self.cosine_eta_min
+                eta_min=self.min_lr_threshold
             )
-            logger.info(f"cosine annealing lr scheduler initialized")
+            logger.info(f"cosine annealing lr scheduler initialized with min_lr={self.min_lr_threshold:.2e}")
         
         elif self.scheduler_type.lower() == 'step':
             self.scheduler = torch.optim.lr_scheduler.StepLR(
@@ -78,7 +79,7 @@ class LRSchedulerCallback(BaseCallback):
                 step_size=self.step_size,
                 gamma=self.step_gamma
             )
-            logger.info(f"step lr scheduler initialized: step_size={self.step_size}, gamma={self.step_gamma}")
+            logger.info(f"step lr scheduler initialized: step_size={self.step_size}, gamma={self.step_gamma}, min_lr_threshold={self.min_lr_threshold}")
         
         else:
             logger.warning(f"unk scheduler type: {self.scheduler_type}. no lr scheduling then")
@@ -86,4 +87,14 @@ class LRSchedulerCallback(BaseCallback):
 
     def on_epoch_end(self, task: 'Trainer') -> None:
         if self.scheduler is not None:
+            if self.scheduler_type.lower() == 'step':
+                if not self.scheduling_stopped:
+                    current_lr = self.scheduler.get_last_lr()[0]  
+                    if current_lr <= self.min_lr_threshold:
+                        logger.info(f"lr {current_lr} < threshold {self.min_lr_threshold}. Stopping step LR scheduling.")
+                        self.scheduling_stopped = True
+                        return
+                else:
+                    return
+            
             self.scheduler.step()
