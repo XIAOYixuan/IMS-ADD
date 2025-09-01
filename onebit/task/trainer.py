@@ -42,6 +42,10 @@ class Trainer(Task):
         # model, loss, optimizer
         self.model: Model = Model(config_manager)
         self.loss_fn: BaseLoss = LossFactory.create(config_manager)
+
+        for cb in self.callbacks:
+            cb.on_model_end(self)
+
         self.optimizer: torch.optim.Optimizer = self._create_optimizer()
 
         # train stat

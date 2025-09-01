@@ -44,3 +44,6 @@ class BaseCallback:
 
     def on_infer_end(self, task: 'Task') -> None:
         pass
+
+    def on_model_end(self, task: 'Task') -> None:
+        pass

@@ -35,13 +35,15 @@ class Evaluator(Task):
             'load_checkpoints', 
             'write_infer_output']
         self.callbacks = self._create_callbacks()
+        for cb in self.callbacks:
+            cb.on_task_begin(self)
         
         # model, loss, optimizer
         self.model: Model = Model(config_manager)
         self.loss_fn: BaseLoss = LossFactory.create(config_manager)
- 
+
         for cb in self.callbacks:
-            cb.on_task_begin(self)
+            cb.on_model_end(self)
         
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
