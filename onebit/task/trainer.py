@@ -42,6 +42,8 @@ class Trainer(Task):
         # model, loss, optimizer
         self.model: Model = Model(config_manager)
         self.loss_fn: BaseLoss = LossFactory.create(config_manager)
+        logger.info(f"Model class: {self.model.__class__}")
+        logger.info(f"Loss  class: {self.loss_fn.__class__}")
 
         for cb in self.callbacks:
             cb.on_model_end(self)
@@ -120,7 +122,7 @@ class Trainer(Task):
 
         with torch.no_grad():
             for audio_batch in tqdm(self.devloader):
-                audio_batch = audio_batch.to(self.device) # type: AudioBatch
+                audio_batch: AudioBatch = audio_batch.to(self.device) 
                 model_out: BackendOutput = self.model(audio_batch)
                 loss_out: LossOutput = self.loss_fn(audio_batch, model_out)
 
