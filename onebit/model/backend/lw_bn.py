@@ -70,7 +70,7 @@ class LWBN(LayerWiseModel):
         scores = (x * w.unsqueeze(0)).sum(dim=-1)
         predictions = scores.clone().sum(dim=-1)
         return LWBNOutput(
-            logits=scores,
+            logits=x,
             predictions=predictions,
             frontend_output=frontend_output,
             bonafide_centers=self.center,
