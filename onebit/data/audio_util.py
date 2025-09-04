@@ -5,11 +5,9 @@ import librosa
 import soundfile as sf
 import logging
 
-logging.basicConfig(level=logging.WARNING)
+from onebit.util import get_logger
 
-# Set the logging level for Numba
-numba_logger = logging.getLogger('numba')
-numba_logger.setLevel(logging.WARNING)
+logger = get_logger(__name__)
 
 SAMPLING_RATE = 16_000
 
@@ -69,6 +67,9 @@ def get_audio(
 
     if norm:
         rms = np.sqrt(np.mean(np.square(data)))
+        if rms == 0:
+            logger.warning(f"empty data: {audio_path}")
+            return data, sr
         target_rms_linear = 10 ** (target_rms / 20.0)
         scaling_factor = target_rms_linear / rms
         data = data * scaling_factor
