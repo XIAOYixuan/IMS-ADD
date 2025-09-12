@@ -298,8 +298,6 @@ class AudioDataset(BaseDataset):
         print(f"\n{'-'*40}")
         print("Processing Configuration:")
         print(f"{'-'*40}")
-        print(f"Post-processing Enabled: {self.config_manager.is_post_processing_enabled()}")
-        print(f"Augmentation Enabled: {self.config_manager.is_augmentation_enabled() and self.split == 'train'}")
         if self.post_processor is not None:
             print(f"PostProcessor: {len(self.post_processor.postprocessors)} postprocessors loaded")
         if self.augmentor is not None:
