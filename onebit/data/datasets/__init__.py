@@ -13,6 +13,6 @@ __all__ = [
     'DatasetRegistry',
     'BaseDataset',
     'AudioDataset',
-    'AudioSample', 
+    'AudioSample',
     'AudioSampleWithTensors',
 ]
