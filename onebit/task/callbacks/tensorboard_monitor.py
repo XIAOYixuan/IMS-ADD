@@ -42,6 +42,7 @@ class TensorboardMonitorCallback(BaseCallback):
         seed = getattr(exp_config, 'seed', 42)
 
         self.trial_name = f"{exp_name}::{seed}" 
+        self.log_dir = self.log_dir / self.trial_name
         self.writer = SummaryWriter(log_dir=self.log_dir)
 
     def on_train_end(self, task: 'Trainer') -> None:

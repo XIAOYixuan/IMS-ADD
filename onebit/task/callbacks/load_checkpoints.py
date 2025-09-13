@@ -78,7 +78,7 @@ class LoadCheckPoints(BaseCallback):
             self.checkpoint_path = None
         logger.info(f"using constructed checkpoint path: {self.checkpoint_path}")
 
-    def on_task_begin(self, task: 'Task') -> None:
+    def on_model_end(self, task: 'Task') -> None:
         if self.checkpoint_path is None:
             return
         if not hasattr(task, 'model'):

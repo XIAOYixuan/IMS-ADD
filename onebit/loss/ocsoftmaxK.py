@@ -32,14 +32,14 @@ class OCSoftmaxK(BaseLoss):
         self.softplus = nn.Softplus()
         # fake weight default 1
 
-    def forward(self, audio_batch: AudioBatch, back_out: BackendOutput):
+    def forward(self, audio_batch: AudioBatch, back_out: LWBNOutput):
         labels = audio_batch.label_tensors # batch size
         # bonafide: 1
         # spoof: 0
         fake_mask = labels == 0
         real_mask = labels == 1
 
-        scores = back_out.logits
+        scores = back_out.scores
         # [num_negative, k] and [num_positive, k]
         fake_scores = scores[fake_mask]
         real_scores = scores[real_mask]

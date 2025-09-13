@@ -52,6 +52,7 @@ class AutoComputeRealWeight(BaseCallback):
         train_txt_file = dataset_dir / "train.txt"
         if not train_txt_file.exists():
             logger.info(f"train.txt not found at {train_txt_file}, won't set the real_weight")
+            return
         
         txt_data = pd.read_csv(train_txt_file, sep='\t', header=None, 
                               names=['uttid', 'origin_ds', 'speaker', 'attacker', 'label'])

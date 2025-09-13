@@ -20,4 +20,4 @@ class DatasetFactory:
             dataset_cls = DatasetRegistry.get(dataset_name)
             return dataset_cls(split, config_manager)
         else:
-            raise ValueError(f"Unknown backend: {dataset_name}. Available backends: {DatasetRegistry.list_dataset()}")
+            raise ValueError(f"Unknown backend: {dataset_name}. Available backends: {DatasetRegistry.list_datasets()}")

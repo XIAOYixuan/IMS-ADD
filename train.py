@@ -29,8 +29,6 @@ def main():
     config_manager = ConfigManager(args.config)
     if args.cli_args:
         config_manager.merge_with_cli(args.cli_args)
-
-    config_manager.print_config()
     
     trainer = Trainer(config_manager)
     trainer.start()

@@ -24,7 +24,7 @@ class RIRAugmentation(BaseAugmentor):
         super().__init__(config_manager)
         data_conf = self.config_manager.get_data_config()
         rir_conf = data_conf.get('aug').get('rir')
-        self.probability = data_conf.get('aug').get('probability', 0.3)
+        self.probability = rir_conf.get('probability', 0.3)
         # TODO: set by config if noise augmentation is needed in the future
         if rir_conf is None:
             raise ValueError(f'unknown rir config')

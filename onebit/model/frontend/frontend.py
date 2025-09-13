@@ -36,6 +36,7 @@ class FrontendModel(nn.Module):
         self.hook_manager.clear_batch_activations()
 
         if self.freeze_frontend:
+            self.model.eval()
             with torch.no_grad():
                 out = self.model(
                     input_values=batch.input_values,
