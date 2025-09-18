@@ -1,6 +1,6 @@
 # OneBit
 
-> This branch is for ICASSP26 submission "How to Label Resynthesized Audio: The Dual Role of Neural Audio Codecs in Audio Deepfake Detection"
+> This branch contains code and experiments for an ongoing research submission.
 
 A training codebase for **Audio Deepfake Detection**. It supports the following architecture:
 
