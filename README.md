@@ -1,6 +1,9 @@
-# OneBit
+# NOTE
 
-> This branch contains code and experiments for an ongoing research submission.
+- This branch contains code and experiments for an ongoing research submission.
+- Model checkpoints and configs are released on [huggingface_link](https://huggingface.co/Yixuan/codec-add)
+  
+# OneBit
 
 A training codebase for **Audio Deepfake Detection**. It supports the following architecture:
 
