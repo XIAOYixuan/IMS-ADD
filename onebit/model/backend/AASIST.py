@@ -577,11 +577,13 @@ class AASIST(BaseBackendModel):
         if self.num_classes == 1:
             output = output.squeeze(-1)
         
-        return BackendOutput(
+        out = BackendOutput(
             logits=output,
             predictions=output, 
             frontend_output=frontend_output
-        ) 
+        )
+        out.utterance_rep = last_hidden
+        return out
 
 if __name__ == '__main__':
     B, T = 3, 64000

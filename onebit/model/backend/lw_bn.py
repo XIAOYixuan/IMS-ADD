@@ -69,10 +69,12 @@ class LWBN(LayerWiseModel):
         # N, L, D -> N, L
         scores = (x * w.unsqueeze(0)).sum(dim=-1)
         predictions = scores.clone().sum(dim=-1)
-        return LWBNOutput(
+        out = LWBNOutput(
             logits=x,
             predictions=predictions,
             frontend_output=frontend_output,
             bonafide_centers=self.center,
             scores=scores
         )
+        out.utterance_rep = bn_feat
+        return out

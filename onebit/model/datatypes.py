@@ -9,7 +9,8 @@ Data flow
 FrontendModel -> BackendModel -> Loss
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
 
 import torch
 from transformers.utils.generic import ModelOutput
@@ -44,9 +45,12 @@ class BackendOutput:
     logits: torch.Tensor
     predictions: torch.Tensor
     frontend_output: FrontendOutput
+    utterance_rep: Optional[torch.Tensor] = field(default=None, init=False, repr=False)
 
     def to(self, device: torch.device, non_blocking: bool = True):
         self.logits = self.logits.to(device, non_blocking=non_blocking)
         self.predictions = self.predictions.to(device, non_blocking=non_blocking)
         self.frontend_output.to(device, non_blocking)
+        if self.utterance_rep is not None:
+            self.utterance_rep = self.utterance_rep.to(device, non_blocking=non_blocking)
         return self
