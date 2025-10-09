@@ -113,7 +113,7 @@ if __name__ == '__main__':
     print("feat attention mask shape:", frontend_out.attention_mask.shape)
     
     # Test hook functionality
-    hook_activations = wavlm_frontend.get_hook_activations()
+    hook_activations = wavlm_frontend.get_hook_activations() # type: ignore
     if hook_activations:
         print("\nHook activations captured:")
         for hook_name, activations in hook_activations.items():
@@ -122,7 +122,7 @@ if __name__ == '__main__':
                 print(f"    {layer_key}: {tensor.shape}")
         
         # Save example to disk
-        wavlm_frontend.save_hook_activations_example("test_activations.pt")
+        wavlm_frontend.save_hook_activations_example("test_activations.pt") # type: ignore
     else:
         print("\nNo hook activations captured (hooks may be disabled)")
  

@@ -143,7 +143,7 @@ class AudioDataset(BaseDataset):
     def __len__(self) -> int:
         return len(self.metadata)
 
-    def __getitem__(self, idx: int) -> AudioSampleWithTensors:
+    def __getitem__(self, idx: int) -> AudioSampleWithTensors: # type: ignore
 
         while True:
             sample = self.metadata[idx]
