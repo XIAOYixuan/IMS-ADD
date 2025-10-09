@@ -18,7 +18,7 @@ from transformers.utils.generic import ModelOutput
 @dataclass
 class FrontendOutput:
     foutput: ModelOutput
-    attention_mask: torch.Tensor
+    attention_mask: Optional[torch.Tensor]
 
     def to(self, device: torch.device, non_blocking: bool = True):
         # handle the hidden states
@@ -35,7 +35,8 @@ class FrontendOutput:
         if hasattr(self.foutput, 'extract_features'):
             self.foutput.extract_features = self.foutput.extract_features.to(device, non_blocking=non_blocking) # type: ignore
 
-        self.attention_mask = self.attention_mask.to(device, non_blocking=non_blocking)
+        if self.attention_mask:
+            self.attention_mask = self.attention_mask.to(device, non_blocking=non_blocking)
 
         return self
 

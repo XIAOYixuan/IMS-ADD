@@ -45,11 +45,13 @@ class DirectProjector(BaseBackendModel):
         last_hidden_state = frontend_output.foutput.last_hidden_state  # type: ignore
         # attn mask [B, T]
         attention_mask = frontend_output.attention_mask
-        attention_mask_expanded = attention_mask.unsqueeze(-1).float()
-
-        # mean pool 
-        masked_hidden_state = last_hidden_state * attention_mask_expanded
-        pooled_output = masked_hidden_state.sum(dim=1) / attention_mask.sum(dim=1, keepdim=True).float()
+        if attention_mask is not None:
+            attention_mask_expanded = attention_mask.unsqueeze(-1).float()
+            # mean pool 
+            masked_hidden_state = last_hidden_state * attention_mask_expanded
+            pooled_output = masked_hidden_state.sum(dim=1) / attention_mask.sum(dim=1, keepdim=True).float()
+        else:
+            pooled_output = last_hidden_state.sum(dim=1) / last_hidden_state.size(1)
         
         hidden = self.ffn(pooled_output)
         hidden = self.activation(hidden)
