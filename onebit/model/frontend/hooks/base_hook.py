@@ -3,7 +3,7 @@
 
 import torch
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 
 
 class BaseHook(ABC):
@@ -20,7 +20,7 @@ class BaseHook(ABC):
         pass
     
     @abstractmethod  
-    def get_target_modules(self, model: torch.nn.Module) -> List[torch.nn.Module]:
+    def get_target_modules(self, model: torch.nn.Module) -> List[Tuple[torch.nn.Module, str]]:
         """Find and return target modules to hook."""
         pass
     

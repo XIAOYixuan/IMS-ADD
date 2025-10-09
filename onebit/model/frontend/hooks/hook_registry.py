@@ -52,15 +52,14 @@ class HookRegistry:
     
     @classmethod
     def _auto_discover_hooks(cls):
-        import onebit.model.frontend as frontend_package
-        frontend_dir = os.path.dirname(frontend_package.__file__)
-        
-        for _, module_name, is_pkg in pkgutil.iter_modules([frontend_dir]):
+        import onebit.model.frontend.hooks as hook_package
+        hook_dir = os.path.dirname(hook_package.__file__)
+        for _, module_name, is_pkg in pkgutil.iter_modules([hook_dir]):
             if module_name in ['__init__', 'frontend', 'base_hook', 'hook_registry', 'hook_manager']:
                 continue
             
             try:
                 logger.debug(f"Loading hook module {module_name}")
-                importlib.import_module(f'onebit.model.frontend.{module_name}')
+                importlib.import_module(f'onebit.model.frontend.hooks.{module_name}')
             except ImportError as e:
                 logger.debug(f"Failed to import hook module {module_name}: {e}")
