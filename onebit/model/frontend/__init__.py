@@ -2,10 +2,12 @@
 # author: Yixuan
 #
 #
-
-from .frontend import FrontendOutput, FrontendModel
+from .base import BaseFrontendModel
+from .factory import FrontendFactory
+from .registry import FrontendRegistry
 
 __all__ = [
-    'FrontendOutput',
-    'FrontendModel'
+    'BaseFrontendModel',
+    'FrontendFactory',
+    'FrontendRegistry'
 ]

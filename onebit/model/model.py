@@ -7,8 +7,8 @@ import torch.nn as nn
 
 from onebit.config import ConfigManager
 from onebit.data import AudioBatch
-from onebit.model.datatypes import BackendOutput
-from onebit.model.frontend import FrontendModel
+from onebit.model.datatypes import BackendOutput, FrontendOutput
+from onebit.model.frontend import FrontendFactory 
 from onebit.model.backend import BackendFactory
 
 class Model(nn.Module):
@@ -19,7 +19,7 @@ class Model(nn.Module):
     def __init__(self, config_manager: ConfigManager):
         super().__init__()
         self.config_manager = config_manager
-        self.frontend = FrontendModel(config_manager)
+        self.frontend = FrontendFactory.create(config_manager)
         self.backend = BackendFactory.create(config_manager)
 
         frontend_cfg = config_manager.get_model_config().frontend
@@ -28,7 +28,7 @@ class Model(nn.Module):
     def forward(self, batch: AudioBatch) -> BackendOutput:
         if self.freeze_frontend: 
             with torch.no_grad():
-                frontend_output = self.frontend(batch)
+                frontend_output: FrontendOutput = self.frontend(batch)
         else:
             frontend_output = self.frontend(batch)
         backend_output = self.backend(batch, frontend_output)

@@ -3,7 +3,7 @@ import os
 import pkgutil
 from typing import Dict, Type, Callable
 
-from .base_hook import BaseHook
+from onebit.model.frontend.hooks.base_hook import BaseHook
 from onebit.util import get_logger
 
 logger = get_logger(__name__)

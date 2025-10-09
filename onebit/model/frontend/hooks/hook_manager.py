@@ -5,8 +5,8 @@
 
 import torch
 from typing import Dict, List, Any, Optional
-from .hook_registry import HookRegistry
-from .base_hook import BaseHook
+from onebit.model.frontend.hooks.hook_registry import HookRegistry
+from onebit.model.frontend.hooks.base_hook import BaseHook
 
 
 class HookManager:

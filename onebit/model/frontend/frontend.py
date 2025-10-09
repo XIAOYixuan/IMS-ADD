@@ -10,15 +10,19 @@ from transformers import AutoModel
 
 from onebit.config import ConfigManager
 from onebit.data import AudioBatch
-from onebit.model.datatypes import FrontendOutput
 from onebit.util import get_logger
-from .hook_manager import HookManager 
+from onebit.model.datatypes import FrontendOutput
+from onebit.model.frontend.hooks.hook_manager import HookManager
+from onebit.model.frontend.base import BaseFrontendModel
+from onebit.model.frontend.registry import FrontendRegistry
 
 logger = get_logger(__name__)
-class FrontendModel(nn.Module):
+
+@FrontendRegistry.register('hf_frontend')
+class FrontendModel(BaseFrontendModel):
 
     def __init__(self, config_manager: ConfigManager):
-        super().__init__()
+        super().__init__(config_manager)
         frontend_config = config_manager.get_model_config().frontend
         logger.info(f'Loading frontend model: {frontend_config.name}')
         self.model = AutoModel.from_pretrained(frontend_config.name)
@@ -32,21 +36,21 @@ class FrontendModel(nn.Module):
         hook_config = getattr(self.frontend_cfg, 'hooks', {'enabled': False})
         self.hook_manager = HookManager(self.model, hook_config)
 
-    def forward(self, batch: AudioBatch) -> FrontendOutput:
+    def forward(self, audio_batch: AudioBatch) -> FrontendOutput:
         self.hook_manager.clear_batch_activations()
 
         if self.freeze_frontend:
             self.model.eval()
             with torch.no_grad():
                 out = self.model(
-                    input_values=batch.input_values,
-                    attention_mask=batch.attention_mask,
+                    input_values=audio_batch.input_values,
+                    attention_mask=audio_batch.attention_mask,
                     output_hidden_states=self.frontend_cfg.output_hidden_states
                 )
         else:
             out = self.model(
-                input_values=batch.input_values,
-                attention_mask=batch.attention_mask,
+                input_values=audio_batch.input_values,
+                attention_mask=audio_batch.attention_mask,
                 output_hidden_states=self.frontend_cfg.output_hidden_states
             )
 
@@ -54,7 +58,7 @@ class FrontendModel(nn.Module):
         T = last_hidden_state.size(1)
         attention_mask = self.model._get_feature_vector_attention_mask(
             T,
-            batch.attention_mask,
+            audio_batch.attention_mask,
             add_adapter=False
         )
 
