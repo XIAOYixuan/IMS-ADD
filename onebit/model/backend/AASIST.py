@@ -410,18 +410,18 @@ class AASIST(BaseBackendModel):
     #def __init__(self, device, num_classes, dim_front_out):
         super().__init__(config_manager)
         #self.device = device
-        
+        model_config = config_manager.get_model_config().backend
         # AASIST parameters
-        filts = [70, [1, 32], [32, 32], [32, 64], [64, 64]]
+        #filts = 
+        filts = model_config.get('filts', [70, [1, 32], [32, 32], [32, 64], [64, 64]])
         gat_dims = [64, 32]
-        pool_ratios = [0.5, 0.7, 0.5, 0.5]
+        pool_ratios = model_config.get('pool_ratio', [0.5, 0.7, 0.5, 0.5])
         temperatures =  [2.0, 2.0, 100.0, 100.0]
 
 
         ####
         # create network wav2vec 2.0
         ####
-        model_config = config_manager.get_model_config().backend
         self.input_dim = getattr(model_config, "input_dim", 1024) # ssl dim
         self.num_classes = getattr(model_config, "num_classes", 1) 
         self.LL = nn.Linear(self.input_dim, 128)
@@ -576,22 +576,29 @@ class AASIST(BaseBackendModel):
         output = self.out_layer(last_hidden)
         if self.num_classes == 1:
             output = output.squeeze(-1)
+            predictions = output
+        elif self.num_classes == 2:
+            predictions = output[:, 1]
+            predictions = predictions.squeeze(-1)
+        else:
+            raise ValueError('expecting num classes == 1 or ==2')
         
         out = BackendOutput(
             logits=output,
-            predictions=output, 
+            predictions=predictions, 
             frontend_output=frontend_output
         )
         out.utterance_rep = last_hidden
         return out
 
 if __name__ == '__main__':
+    import sys
     B, T = 3, 64000
     input_values = torch.randn((B, T), dtype=torch.float32)
     attention_mask = torch.ones((B, T), dtype=torch.bool)
     label_tensors = torch.zeros((B,), dtype=torch.long)
 
-    t, d = 199, 1024
+    t, d = 199, 768 
     from transformers.utils.generic import ModelOutput
     hf_model_out = ModelOutput(
         last_hidden_state=torch.randn(B, t, d),
@@ -616,7 +623,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda')
     #device = torch.device('cpu') 
-    config_path = '/mount/arbeitsdaten54/projekte/deepfake/fad/IMS-ADD/configs/w2vaasist.yaml'
+    config_path = sys.argv[-1] 
     config_manager = ConfigManager(config_path)
     model = AASIST(config_manager)
 
