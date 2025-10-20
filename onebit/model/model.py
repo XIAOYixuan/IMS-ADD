@@ -6,10 +6,13 @@ import torch
 import torch.nn as nn
 
 from onebit.config import ConfigManager
+from onebit.util import get_logger
 from onebit.data import AudioBatch
 from onebit.model.datatypes import BackendOutput, FrontendOutput
 from onebit.model.frontend import FrontendFactory 
 from onebit.model.backend import BackendFactory
+
+logger = get_logger(__name__)
 
 class Model(nn.Module):
     """
@@ -26,12 +29,15 @@ class Model(nn.Module):
         self.freeze_frontend = getattr(frontend_cfg, 'freeze_frontend', True)
 
     def forward(self, batch: AudioBatch) -> BackendOutput:
+        #logger.info(f'x: \n{batch.input_values}')
         if self.freeze_frontend: 
             with torch.no_grad():
                 frontend_output: FrontendOutput = self.frontend(batch)
         else:
             frontend_output = self.frontend(batch)
+        #logger.info(f'ssl_feat:\n{frontend_output.foutput.last_hidden_state}')
         backend_output = self.backend(batch, frontend_output)
+        #logger.info(f'pred\n{backend_output.logits}')
         return backend_output
     
 
