@@ -35,7 +35,7 @@ class FrontendOutput:
         if hasattr(self.foutput, 'extract_features'):
             self.foutput.extract_features = self.foutput.extract_features.to(device, non_blocking=non_blocking) # type: ignore
 
-        if self.attention_mask:
+        if self.attention_mask is not None:
             self.attention_mask = self.attention_mask.to(device, non_blocking=non_blocking)
 
         return self
