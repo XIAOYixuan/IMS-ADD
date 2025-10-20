@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class BEATsConfig:
     def __init__(self, cfg=None):
-        self.input_patch_size: int = -1  # path size of patch embedding
+        self.input_patch_size: int = 16  # path size of patch embedding
         self.embed_dim: int = 512  # patch embedding dimension
         self.conv_bias: bool = False  # include bias in conv encoder
 
@@ -160,7 +160,9 @@ class BEATs(nn.Module):
         fbank_mean: float = 15.41663,
         fbank_std: float = 6.55582,
     ):
+        #logger.info(f'source\n{source}')
         fbank = self.preprocess(source, fbank_mean=fbank_mean, fbank_std=fbank_std)
+        #logger.info(f'fbank\n{fbank}')
 
         if padding_mask is not None:
             padding_mask = self.forward_padding_mask(fbank, padding_mask)
@@ -178,20 +180,21 @@ class BEATs(nn.Module):
             features = self.post_extract_proj(features)
 
         x = self.dropout_input(features)
+        #logger.info(f'droupout_input\n{x}')
 
         x, layer_results = self.encoder(
             x,
             padding_mask=padding_mask,
         )
 
-        return x, padding_mask
+        return x, padding_mask, layer_results
 
 
 class BEATsModel(nn.Module):
     def __init__(self, cfg_path: str):
         super().__init__()
         # load the pre-trained checkpoint
-        logger.info(f'loading from cfg_path: {cfg_path}')
+        #logger.info(f'loading from cfg_path: {cfg_path}')
         checkpoint = torch.load(cfg_path)
         cfg = BEATsConfig(checkpoint["cfg"])
         BEATs_model = BEATs(cfg)
@@ -200,6 +203,6 @@ class BEATsModel(nn.Module):
         self.ckpt = checkpoint
 
     def forward(self, x, padding_mask):
-        features, padding_mask = self.model.extract_features(x, padding_mask)
-        return features, padding_mask
+        features, padding_mask, layer_results = self.model.extract_features(x, padding_mask)
+        return features, padding_mask, layer_results
 

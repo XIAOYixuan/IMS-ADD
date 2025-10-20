@@ -37,13 +37,13 @@ class BEATsFrontend(BaseFrontendModel):
         if self.freeze_frontend:
             self.model.eval()
             with torch.no_grad():
-                feats, mask = self.model(audio_batch.input_values, 
+                feats, mask, layer_results = self.model(audio_batch.input_values, 
                                          audio_batch.attention_mask)
         else: 
-            feats, mask = self.model(audio_batch.input_values, 
+            feats, mask, layer_results = self.model(audio_batch.input_values, 
                                audio_batch.attention_mask)
 
-        foutput = BaseModelOutput(last_hidden_state=feats)
+        foutput = BaseModelOutput(last_hidden_state=feats, hidden_states=layer_results)
         return FrontendOutput(foutput=foutput, attention_mask=mask)
     
 if __name__ == '__main__':
@@ -77,6 +77,14 @@ if __name__ == '__main__':
     print(foutput.attention_mask)
     for key in foutput.foutput:
         #N, T, D = 3, 48, 768
-        print(key, foutput.foutput[key].shape)
-        if torch.isnan(foutput.foutput[key]).any():
-            raise ValueError(f'NaN exists')
+        if isinstance(foutput.foutput[key], torch.Tensor):
+            print(key, foutput.foutput[key].shape)
+            if torch.isnan(foutput.foutput[key]).any():
+                raise ValueError(f'NaN exists')
+        elif isinstance(foutput.foutput[key], tuple):
+            items = foutput.foutput[key]
+            print(len(items))
+            for i, item in enumerate(items):
+                print(i, item.shape)
+        else:
+            print(type(foutput.foutput[key]))

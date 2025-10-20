@@ -19,6 +19,8 @@ from torch.nn import LayerNorm, Parameter
 from .modules import (GLU_Linear, GradMultiply, SamePad, get_activation_fn,
                       quant_noise)
 
+import logging
+logger = logging.getLogger(__name__)
 
 class TransformerEncoder(nn.Module):
     def __init__(self, args):
@@ -104,7 +106,7 @@ class TransformerEncoder(nn.Module):
         )
 
     def forward(self, x, padding_mask=None, layer=None):
-        x, layer_results = self.extract_features(x, padding_mask, layer)
+        x, layer_results = self.extract_features(x, padding_mask, -1)
 
         if self.layer_norm_first and layer is None:
             x = self.layer_norm(x)
@@ -123,17 +125,23 @@ class TransformerEncoder(nn.Module):
             x = self.layer_norm(x)
 
         x = F.dropout(x, p=self.dropout, training=self.training)
+        
+        layer_results = []
+        # x: N, T, D
+        if tgt_layer is not None:
+            layer_results.append(x)
 
         # B x T x C -> T x B x C
         x = x.transpose(0, 1)
 
-        layer_results = []
         z = None
-        if tgt_layer is not None:
-            layer_results.append((x, z))
         r = None
         pos_bias = None
+        
+        #logger.info(f'before loop:\n{x}')
+        #logger.info(f'padding mask: \n{padding_mask}')
         for i, layer in enumerate(self.layers):
+            #logger.info(f'i: {i}, total: {len(self.layers)} tgt_layer: {tgt_layer}')
             if self.layer_wise_gradient_decay_ratio != 1.0:
                 x = GradMultiply.apply(x, self.layer_wise_gradient_decay_ratio)
             dropout_probability = np.random.random()
@@ -145,10 +153,12 @@ class TransformerEncoder(nn.Module):
                     pos_bias=pos_bias,
                 )
             if tgt_layer is not None:
-                layer_results.append((x, z))
+                #layer_results.append((x, z))
+                layer_results.append(x.transpose(0, 1))
             if i == tgt_layer:
                 r = x
                 break
+            #logger.info(f'{i} layer: \n{x}')
 
         if r is not None:
             x = r
@@ -156,7 +166,7 @@ class TransformerEncoder(nn.Module):
         # T x B x C -> B x T x C
         x = x.transpose(0, 1)
 
-        return x, layer_results
+        return x, tuple(layer_results)
 
 
 class TransformerSentenceEncoderLayer(nn.Module):
