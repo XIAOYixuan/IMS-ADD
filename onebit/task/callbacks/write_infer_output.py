@@ -44,6 +44,7 @@ class WriteInferOutputCallback(BaseCallback):
         self.infer_dir.mkdir(parents=True, exist_ok=True)
         
         self.dataset_name = self.config_manager.get_dataset_name()
+        self.val_key = self.config_manager.get_data_config().val_key
         
         logger.info(f'{__name__} initialized, will output to {self.infer_dir}')
 
@@ -67,11 +68,11 @@ class WriteInferOutputCallback(BaseCallback):
             'label': labels
         })
         
-        output_file = self.infer_dir / f"{self.dataset_name}.csv"
+        output_file = self.infer_dir / f"{self.dataset_name}.{self.val_key}.csv"
         
         results_df.to_csv(output_file, index=False)
         
-        summary_file = self.infer_dir / f"{self.dataset_name}_summary.json"
+        summary_file = self.infer_dir / f"{self.dataset_name}.{self.val_key}.summary.json"
         summary_data = {
             "dataset": self.dataset_name,
             "total_samples": len(uttids),
