@@ -62,19 +62,33 @@ class RIRAugmentation(BaseAugmentor):
         return augmented
 
 if __name__ == '__main__':
+    import sys
+    import soundfile as sf
+    from pathlib import Path
+    
+    if len(sys.argv) < 2:
+        print("Usage: python rir.py <output_dir> [rir_path] [audio_file]")
+        sys.exit(1)
+    
+    output_dir = Path(sys.argv[1])
+    rir_path = sys.argv[2] if len(sys.argv) > 2 else "./tmp/RIRS_NOISES/"
+    audio_file = sys.argv[3] if len(sys.argv) > 3 else "./tmp/test.flac"
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
     config_path = "onebit/configs/test.yaml"
     config_manager = ConfigManager(config_path)
     cli_args_dict = {
         "data.aug.rir.probability": 1.0,
-        "data.aug.rir.rir_path": "./tmp/RIRS_NOISES/"
+        "data.aug.rir.rir_path": rir_path
     }
     config_manager.merge_with_cli(cli_args_dict)
 
     rir_augmentor = RIRAugmentation(config_manager)
 
-    audio_file = "./tmp/test.flac"
     audio_array, sr = audio_util.get_audio(audio_file, trim_sil=False)
     augmented = rir_augmentor(audio_array)
 
-    import soundfile as sf
-    sf.write("test_augmented.wav", augmented, sr)
+    output_path = output_dir / "rir.wav"
+    sf.write(str(output_path), augmented, sr)
+    print(f"Augmented audio saved to {output_path}")
