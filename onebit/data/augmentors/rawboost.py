@@ -122,4 +122,35 @@ class RawBoostAugmentation(BaseAugmentor):
     def __repr__(self) -> str:
         """String representation of the augmentation."""
         return (f"RawBoostAugmentation(algorithm={self.algorithm}, "
-                f"probability={self.probability}, sample_rate={self.sample_rate})") 
+                f"probability={self.probability}, sample_rate={self.sample_rate})")
+
+if __name__ == '__main__':
+    import sys
+    import soundfile as sf
+    from pathlib import Path
+    
+    if len(sys.argv) < 2:
+        print("Usage: python rawboost.py <output_dir> [audio_file]")
+        sys.exit(1)
+    
+    output_dir = Path(sys.argv[1])
+    audio_file = sys.argv[2] if len(sys.argv) > 2 else "./tmp/test.flac"
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    config_path = "onebit/configs/test.yaml"
+    config_manager = ConfigManager(config_path)
+    cli_args_dict = {
+        "data.aug.rawboost.probability": 1.0
+    }
+    config_manager.merge_with_cli(cli_args_dict)
+    
+    rawboost_augmentor = RawBoostAugmentation(config_manager)
+    
+    from onebit.data import audio_util
+    audio_array, sr = audio_util.get_audio(audio_file, trim_sil=False)
+    augmented = rawboost_augmentor(audio_array)
+    
+    output_path = output_dir / "rawboost.wav"
+    sf.write(str(output_path), augmented, sr)
+    print(f"Augmented audio saved to {output_path}")
