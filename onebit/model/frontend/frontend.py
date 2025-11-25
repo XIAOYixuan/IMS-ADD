@@ -12,7 +12,6 @@ from onebit.config import ConfigManager
 from onebit.data import AudioBatch
 from onebit.util import get_logger
 from onebit.model.datatypes import FrontendOutput
-from onebit.model.frontend.hooks.hook_manager import HookManager
 from onebit.model.frontend.base import BaseFrontendModel
 from onebit.model.frontend.registry import FrontendRegistry
 
@@ -33,11 +32,7 @@ class FrontendModel(BaseFrontendModel):
             for param in self.model.parameters():
                 param.requires_grad = False
 
-        hook_config = getattr(self.frontend_cfg, 'hooks', {'enabled': False})
-        self.hook_manager = HookManager(self.model, hook_config)
-
     def forward(self, audio_batch: AudioBatch) -> FrontendOutput:
-        self.hook_manager.clear_batch_activations()
 
         if self.freeze_frontend:
             self.model.eval()
@@ -66,15 +61,6 @@ class FrontendModel(BaseFrontendModel):
             foutput=out,
             attention_mask=attention_mask
         )
-
-    def get_hook_activations(self):
-        """
-        Useful for debug and intermedia results modification
-        """
-        return self.hook_manager.get_batch_activations()
-    
-    def save_hook_activations_example(self, filepath: str = "temp.pt"):
-        self.hook_manager.save_example_to_disk(filepath)
 
 if __name__ == '__main__':
     B, T = 3, 64000
@@ -112,17 +98,3 @@ if __name__ == '__main__':
     print("shape of layer 0 hidden_state:", frontend_out.foutput.hidden_states[0].shape) # type: ignore
     print("feat attention mask shape:", frontend_out.attention_mask.shape)
     
-    # Test hook functionality
-    hook_activations = wavlm_frontend.get_hook_activations() # type: ignore
-    if hook_activations:
-        print("\nHook activations captured:")
-        for hook_name, activations in hook_activations.items():
-            print(f"  {hook_name}:")
-            for layer_key, tensor in activations.items():
-                print(f"    {layer_key}: {tensor.shape}")
-        
-        # Save example to disk
-        wavlm_frontend.save_hook_activations_example("test_activations.pt") # type: ignore
-    else:
-        print("\nNo hook activations captured (hooks may be disabled)")
- 

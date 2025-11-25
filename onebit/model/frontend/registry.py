@@ -63,4 +63,4 @@ class FrontendRegistry:
                 logger.debug(f"loaded frontend module {module_name}")
                 importlib.import_module(f'onebit.model.frontend.{module_name}')
             except ImportError as e:
-                logger.debug(f"failed to import frontend module {module_name}: {e}")
+                logger.info(f"failed to import frontend module {module_name}: {e}")

@@ -11,6 +11,7 @@ from onebit.data import AudioBatch
 from onebit.model.datatypes import BackendOutput, FrontendOutput
 from onebit.model.frontend import FrontendFactory 
 from onebit.model.backend import BackendFactory
+from onebit.model.hooks.hook import Hook
 
 logger = get_logger(__name__)
 
@@ -24,6 +25,7 @@ class Model(nn.Module):
         self.config_manager = config_manager
         self.frontend = FrontendFactory.create(config_manager)
         self.backend = BackendFactory.create(config_manager)
+        self.hooks = Hook.from_config(config_manager, self)
 
         frontend_cfg = config_manager.get_model_config().frontend
         self.freeze_frontend = getattr(frontend_cfg, 'freeze_frontend', True)
@@ -38,6 +40,7 @@ class Model(nn.Module):
         #logger.info(f'ssl_feat:\n{frontend_output.foutput.last_hidden_state}')
         backend_output = self.backend(batch, frontend_output)
         #logger.info(f'pred\n{backend_output.logits}')
+        self.hooks.on_batch_end(batch)
         return backend_output
     
 
